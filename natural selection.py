@@ -1,13 +1,16 @@
 import random
 import numpy as np
 class Cat:
-    def __init__(self, num_food,m_num_food,base,position):
+    def __init__(self, num_food,m_num_food,base,position,m_step):
         self.num_food = num_food
         self.m_num_food = max(min(m_num_food, 5),1)
         self.base = base
         self.position = position
+        self.m_step = max(min(m_step,0.2),0.05)
     def decisition(self):
-        if self.num_food < self.m_num_food:
+        risk = self.m_num_food * self.num_food + self.m_step * steps + random.uniform(-1,1)
+        
+        if risk < 10:
             movement=["left","right","up","down"]
             movement = random.choice(movement)
             if movement == "left":
@@ -65,15 +68,16 @@ def update():
                 cats.remove(cat)
             else:
                 for i in range(cat.num_food):
-                    cats.append(Cat(0,cat.m_num_food+random.randint(-1,1),[random.randint(0,49),random.randint(0,49)],[random.randint(0,49),random.randint(0,49)]))
+                    cats.append(Cat(0,cat.m_num_food+random.randint(-1,1)/10,[random.randint(0,49),random.randint(0,49)],[random.randint(0,49),random.randint(0,49)],cat.m_step+(random.randint(-1,1)/100)))
                 cat.reset()
         steps = 0
         generations+=1
         fishes = [Fish([random.randint(0,49),random.randint(0,49)]) for _ in range(1,min(generations*2,100))]
 def evaluate():
-    m1,m2,m3,m4,m5 = [0,]*5
+    m1,m2,m3,m4,m5,m6,m7,m8 = [0,]*8
     for cat in cats:
         x = cat.m_num_food
+        y = cat.m_step
         if x == 1:
             m1+=1
         elif x == 2:
@@ -84,11 +88,18 @@ def evaluate():
             m4+=1
         elif x == 5:
             m5+=1
+        if 0.05<= y <= 0.1 :
+            m6+=1
+        elif 0.1 <= y <= 0.15:
+            m7+=1
+        elif 0.15 <= y <= 0.2:
+            m8+=1
         
-    print(m1,m2,m3,m4,m5)
+    print(m1,m2,m3,m4,m5,m6,m7,m8)
 
 
-cats = [Cat(0,random.randint(1,5),[random.randint(0,49),random.randint(0,49)],[random.randint(0,49),random.randint(0,49)]) for _ in range(1,50)]
+
+cats = [Cat(0,random.randint(5,20)/10,[random.randint(0,49),random.randint(0,49)],[random.randint(0,49),random.randint(0,49)],random.randint(5,20)/100) for _ in range(1,50)]
 fishes = [Fish([random.randint(0,49),random.randint(0,49)]) for _ in range(1,50)]
 world = np.zeros((50, 50))
 steps = 0
