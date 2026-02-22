@@ -6,25 +6,30 @@ class Cat:
         self.m_num_food = max(min(m_num_food, 5),1)
         self.base = base
         self.position = position
-        self.m_step = max(min(m_step,0.2),0.05)
+        self.m_step = max(min(m_step,0.002),0.0005)
+    def movement(self):
+        movement=["left","right","up","down"]
+        movement = random.choice(movement)
+        if movement == "left":
+            self.position[0]-=1
+        elif movement == "right":
+            self.position[0]+=1
+        elif movement == "up":
+            self.position[1]-=1
+        elif movement == "down":
+            self.position[1]+=1
+        self.position[0] = max(0, min(49, self.position[0]))
+        self.position[1] = max(0, min(49, self.position[1]))
     def decisition(self):
         risk = self.m_num_food * self.num_food + self.m_step * steps + random.uniform(-1,1)
         
-        if risk < 10:
-            movement=["left","right","up","down"]
-            movement = random.choice(movement)
-            if movement == "left":
-                self.position[0]-=1
-            elif movement == "right":
-                self.position[0]+=1
-            elif movement == "up":
-                self.position[1]-=1
-            elif movement == "down":
-                self.position[1]+=1
-            self.position[0] = max(0, min(49, self.position[0]))
-            self.position[1] = max(0, min(49, self.position[1]))
+        if risk < random.randint(5,8):
+            self.movement()
         else:
-            self.position = self.base.copy()
+            if  not self.num_food == 0:
+                self.position = self.base.copy()
+            else:
+                self.movement()
     def x(self):
         return self.position[0]
     def y(self):
@@ -64,42 +69,44 @@ def update():
             
     if cats_returned > len(cats) * 0.75 or (steps >= 100) or len(fishes) == 0:
         for cat in cats[:]:
-            if not cat.returned():
+            if not cat.returned() or cat.num_food == 0:
                 cats.remove(cat)
             else:
-                for i in range(cat.num_food):
-                    cats.append(Cat(0,cat.m_num_food+random.randint(-1,1)/10,[random.randint(0,49),random.randint(0,49)],[random.randint(0,49),random.randint(0,49)],cat.m_step+(random.randint(-1,1)/100)))
+                if cat.num_food > 1:
+                    for i in range(cat.num_food-1):
+                        cats.append(Cat(0,cat.m_num_food+random.randint(-1,1)/10,[random.randint(0,49),random.randint(0,49)],[random.randint(0,49),random.randint(0,49)],cat.m_step+(random.randint(-1,1)/5000)))
+            
                 cat.reset()
         steps = 0
         generations+=1
-        fishes = [Fish([random.randint(0,49),random.randint(0,49)]) for _ in range(1,min(generations*2,100))]
+        fishes = [Fish([random.randint(0,49),random.randint(0,49)]) for _ in range(1,max((generations*2),1000))]
 def evaluate():
     m1,m2,m3,m4,m5,m6,m7,m8 = [0,]*8
     for cat in cats:
         x = cat.m_num_food
         y = cat.m_step
-        if x == 1:
+        if 1 <= x < 2:
             m1+=1
-        elif x == 2:
+        elif 2 <= x < 3:
             m2+=1
-        elif x == 3:
+        elif 3 <= x < 4:
             m3+=1
-        elif x == 4:
+        elif 4 <= x < 5:
             m4+=1
         elif x == 5:
             m5+=1
-        if 0.05<= y <= 0.1 :
+        if 0.0005<= y <= 0.001 :
             m6+=1
-        elif 0.1 <= y <= 0.15:
+        elif 0.001 <= y <= 0.0015:
             m7+=1
-        elif 0.15 <= y <= 0.2:
+        elif 0.0015 <= y <= 0.002:
             m8+=1
         
     print(m1,m2,m3,m4,m5,m6,m7,m8)
+    
 
 
-
-cats = [Cat(0,random.randint(5,20)/10,[random.randint(0,49),random.randint(0,49)],[random.randint(0,49),random.randint(0,49)],random.randint(5,20)/100) for _ in range(1,50)]
+cats = [Cat(0,random.randint(1,5),[random.randint(0,49),random.randint(0,49)],[random.randint(0,49),random.randint(0,49)],random.randint(5,20)/100) for _ in range(1,50)]
 fishes = [Fish([random.randint(0,49),random.randint(0,49)]) for _ in range(1,50)]
 world = np.zeros((50, 50))
 steps = 0
@@ -109,4 +116,5 @@ for i in range(1,1000):
     steps+=1
     if i%10 == 0:
         evaluate()
-print(f"num of generations: {generations}")
+
+print(f"num of generations: {generations}, number of cats: {len(cats)}")
